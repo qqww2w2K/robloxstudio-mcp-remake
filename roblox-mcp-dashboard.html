@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boshyxd Plugin Remake Dashboard</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-body: #FAF7F2;
+            --bg-sidebar: #FFFFFF;
+            --bg-card: #FFFFFF;
+            --bg-card-hover: #F8FAFC;
+            --border-color: #E2E8F0;
+            --text-main: #1E293B;
+            --text-heading: #0F172A;
+            --text-muted: #64748B;
+            --accent-blue: #1E40AF;
+            --accent-blue-light: #DBEAFE;
+            --accent-blue-hover: #1D4ED8;
+            --accent-green: #10B981;
+            --accent-yellow: #F59E0B;
+            --accent-red: #EF4444;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --font-heading: 'Playfair Display', serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: var(--font-body);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background-image: radial-gradient(circle at top right, rgba(30, 64, 175, 0.03), transparent 400px);
+        }
+
+        h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); color: var(--text-heading); margin: 0; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex; flex-direction: column; padding: 2.5rem 0;
+            box-shadow: var(--shadow-sm);
+            z-index: 10;
+        }
+
+        .sidebar-brand {
+            padding: 0 2rem 2.5rem 2rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            display: flex; align-items: center; gap: 12px;
+            font-family: var(--font-heading);
+            letter-spacing: -0.02em;
+        }
+
+        .nav-list { list-style: none; padding: 0; margin: 0; }
+        .nav-item {
+            padding: 0.85rem 2rem;
+            display: flex; align-items: center; gap: 14px;
+            color: var(--text-muted);
+            cursor: pointer; transition: all 0.2s ease;
+            font-size: 0.95rem; font-weight: 500;
+        }
+        .nav-item:hover { color: var(--accent-blue); background-color: var(--accent-blue-light); }
+        .nav-item.active { color: var(--accent-blue); background-color: var(--accent-blue-light); border-left: 4px solid var(--accent-blue); font-weight: 600; }
+        .nav-item i { width: 20px; height: 20px; }
+
+        /* Main Content */
+        .main-container { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .top-bar { padding: 2.5rem 3.5rem 1.5rem; display: flex; justify-content: space-between; align-items: flex-start; }
+        .project-info h4 { text-transform: uppercase; font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.15em; font-family: var(--font-body); font-weight: 700; margin-bottom: 0.25rem; }
+        .project-info h2 { font-size: 2.25rem; font-weight: 700; letter-spacing: -0.02em; }
+        .project-path { font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 12px; margin-top: 0.75rem; }
+        .badge-place { background-color: var(--accent-blue-light); color: var(--accent-blue); padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; font-weight: 600; border: 1px solid rgba(30, 64, 175, 0.1); }
+        .settings-btn { background: #FFFFFF; border: 1px solid var(--border-color); color: var(--text-muted); padding: 12px; border-radius: var(--radius-md); cursor: pointer; transition: 0.2s; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; }
+        .settings-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+        /* Pages */
+        .page { padding: 0 3.5rem 3.5rem 3.5rem; overflow-y: auto; display: none; height: 100%; }
+        .page.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Grid & Cards */
+        .status-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 3rem; }
+        .card { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 2rem; position: relative; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: var(--shadow-sm); }
+        .card:hover { border-color: var(--accent-blue-light); transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+        .card.status-ok { border-top: 4px solid var(--accent-green); }
+        .card-header { display: flex; align-items: center; gap: 10px; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 1rem; letter-spacing: 0.1em; font-family: var(--font-body); }
+        .card-title { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-heading); font-family: var(--font-heading); }
+        .card-sub { font-size: 0.9rem; color: var(--text-muted); }
+
+        /* Features Showcase */
+        .features-showcase { background: linear-gradient(135deg, #1E40AF 0%, #1D4ED8 100%); color: white; border-radius: var(--radius-lg); padding: 2.5rem; margin-bottom: 3rem; box-shadow: var(--shadow-md); position: relative; overflow: hidden; }
+        .features-showcase::after { content: ''; position: absolute; top: 0; right: 0; width: 300px; height: 300px; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%); transform: translate(30%, -30%); border-radius: 50%; }
+        .features-showcase h3 { color: white; font-size: 1.75rem; margin-bottom: 0.5rem; }
+        .features-showcase p.sub { color: #BFDBFE; font-size: 1rem; margin-bottom: 2rem; margin-top: 0; }
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        .feature-item { display: flex; align-items: flex-start; gap: 12px; }
+        .feature-item i { color: #60A5FA; flex-shrink: 0; margin-top: 2px; }
+        .feature-item div h4 { font-family: var(--font-body); color: white; font-size: 0.95rem; font-weight: 600; margin-bottom: 0.25rem; letter-spacing: 0; text-transform: none; }
+        .feature-item div p { color: #BFDBFE; font-size: 0.85rem; margin: 0; line-height: 1.4; }
+        .free-badge { position: absolute; top: 2rem; right: 2.5rem; background: #F59E0B; color: #FFF; padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3); }
+
+        /* List Sections */
+        .section-title { font-family: var(--font-heading); font-size: 1.5rem; color: var(--text-heading); margin: 0 0 1.5rem 0; font-weight: 600; letter-spacing: -0.01em; }
+        .list-panel { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); margin-bottom: 3rem; }
+        #recent-changes, #changelog-list { max-height: 500px; overflow-y: auto; }
+        .list-item { padding: 1.25rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: flex-start; gap: 20px; font-size: 0.95rem; transition: background-color 0.2s; }
+        .list-item:hover { background-color: var(--bg-card-hover); }
+        .list-item:last-child { border-bottom: none; }
+        .item-time { color: var(--text-muted); font-size: 0.85rem; width: 70px; font-weight: 500; padding-top: 2px; }
+        .item-icon { background: var(--accent-blue-light); color: var(--accent-blue); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .item-content { flex-grow: 1; }
+        .item-title { font-weight: 600; color: var(--text-heading); margin-bottom: 4px; }
+        .item-detail { font-size: 0.85rem; color: var(--text-muted); word-break: break-all; white-space: pre-wrap; }
+        
+        .type-badge { font-size: 0.7rem; text-transform: uppercase; font-weight: 700; padding: 2px 8px; border-radius: 12px; margin-left: 8px; vertical-align: middle; }
+        .type-ai { background-color: #EDE9FE; color: #1E40AF; }
+        .type-user { background-color: #F1F5F9; color: #475569; }
+
+        /* Tools Runner */
+        .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .panel { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow-md); }
+        .panel-header { padding: 1.5rem 2rem; font-weight: 600; border-bottom: 1px solid var(--border-color); background-color: #FAFAFA; color: var(--text-heading); font-size: 1.1rem; font-family: var(--font-heading); }
+        .panel-body { padding: 2rem; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.6rem; font-size: 0.9rem; font-weight: 600; color: var(--text-main); }
+        input, select, textarea { width: 100%; padding: 0.85rem 1.25rem; background-color: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-main); font-family: inherit; transition: 0.2s; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); }
+        input:focus, select:focus, textarea:focus { border-color: var(--accent-blue); outline: none; box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1); }
+        .execute-btn { background: var(--accent-blue); color: white; border: none; padding: 1.1rem; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; width: 100%; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); font-size: 1rem; box-shadow: 0 4px 6px rgba(30, 64, 175, 0.2); }
+        .execute-btn:hover { background: var(--accent-blue-hover); transform: translateY(-2px); box-shadow: 0 6px 12px rgba(30, 64, 175, 0.3); }
+        .execute-btn:active { transform: translateY(0); }
+        .execute-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .response-code { margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--text-muted); white-space: pre-wrap; line-height: 1.6; background: #F8FAFC; padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); }
+        .success { color: var(--accent-green); }
+        .error { color: var(--accent-red); }
+
+        /* Playtest UI */
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; }
+        .btn-play { background: var(--accent-green); color: #FFFFFF; border: none; padding: 1.25rem; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2); font-size: 1.05rem; }
+        .btn-run { background: var(--accent-blue); color: white; border: none; padding: 1.25rem; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; box-shadow: 0 4px 6px rgba(30, 64, 175, 0.2); font-size: 1.05rem; }
+        .btn-stop { background: var(--accent-red); color: white; border: none; padding: 1.25rem; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2); font-size: 1.05rem; }
+        .btn-play:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3); }
+        .btn-run:hover { background: var(--accent-blue-hover); transform: translateY(-2px); box-shadow: 0 6px 12px rgba(30, 64, 175, 0.3); }
+        .btn-stop:hover { background: #DC2626; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(239, 68, 68, 0.3); }
+        
+        .console-output { margin-top: 1.5rem; background: #0F172A; padding: 1.5rem; border-radius: 12px; height: 400px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; line-height: 1.6; color: #E2E8F0; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
+        .console-line { margin-bottom: 6px; border-left: 3px solid transparent; padding-left: 12px; }
+        .console-line.warn { color: var(--accent-yellow); border-left-color: var(--accent-yellow); background: rgba(245, 158, 11, 0.05); padding: 4px 12px; border-radius: 0 4px 4px 0; }
+        .console-line.error { color: #FCA5A5; border-left-color: var(--accent-red); background: rgba(239, 68, 68, 0.05); padding: 4px 12px; border-radius: 0 4px 4px 0; }
+        .console-line.info { color: #93C5FD; border-left-color: var(--accent-blue); }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+        
+        .summary-row { display: flex; gap: 3rem; align-items: center; }
+        .summary-stat { font-size: 1.1rem; color: var(--text-heading); font-weight: 500; display: flex; align-items: center; gap: 8px; }
+        .summary-stat strong { font-weight: 700; font-size: 1.4rem; color: var(--accent-blue); }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-brand"><i data-lucide="gem"></i> <span>Boshyxd Plugin Remake</span></div>
+        <nav>
+            <ul class="nav-list">
+                <li class="nav-item active" onclick="showPage('overview', event)"><i data-lucide="layout-dashboard"></i> Dashboard</li>
+                <li class="nav-item" onclick="showPage('changelog', event)"><i data-lucide="history"></i> History</li>
+                <li class="nav-item" onclick="showPage('connection', event)"><i data-lucide="network"></i> Connection</li>
+                <li class="nav-item" onclick="showPage('sync', event)"><i data-lucide="refresh-ccw"></i> Sync</li>
+                <li class="nav-item" onclick="showPage('playtest', event)"><i data-lucide="play-circle"></i> Playtest</li>
+                <li class="nav-item" onclick="showPage('tools', event)"><i data-lucide="braces"></i> Tools Engine</li>
+            </ul>
+        </nav>
+        <div style="margin-top:auto; padding:0 2.5rem; font-size:0.8rem; color:var(--text-muted); font-weight:500; line-height: 1.5;">
+            Studio integration refined.<br>
+            <span style="color:var(--accent-blue); font-weight: 700;">Remake by ItsQuentar</span>
+        </div>
+    </aside>
+
+    <main class="main-container">
+        <header class="top-bar">
+            <div class="project-info">
+                <h4>Active Workspace</h4>
+                <h2 id="project-name">Connecting...</h2>
+                <div class="project-path">
+                    <i data-lucide="folder" style="width:16px; color:var(--text-muted)"></i> <span id="project-path-text">-</span>
+                    <div class="badge-place"><i data-lucide="gamepad-2" style="width:14px"></i> <span id="place-badge">Studio</span></div>
+                </div>
+            </div>
+            <div style="display:flex; gap:16px;">
+                <button class="settings-btn" onclick="location.reload()" title="Refresh"><i data-lucide="refresh-cw"></i></button>
+                <button class="settings-btn" onclick="showPage('connection', event)"><i data-lucide="settings"></i></button>
+            </div>
+        </header>
+
+        <!-- OVERVIEW PAGE -->
+        <div id="page-overview" class="page active">
+            <!-- Features Showcase -->
+            <div class="features-showcase">
+                <div class="free-badge">All Features Free</div>
+                <h3>Premium Studio Control</h3>
+                <p class="sub">Experience the next generation of Roblox Studio integrations.</p>
+                <div class="features-grid">
+                    <div class="feature-item"><i data-lucide="check-circle"></i><div><h4>Full Access System</h4><p>Control scripts, instances, properties, and core tools seamlessly.</p></div></div>
+                    <div class="feature-item"><i data-lucide="check-circle"></i><div><h4>Bidirectional Sync</h4><p>Keep Studio and Local perfectly in sync in real-time.</p></div></div>
+                    <div class="feature-item"><i data-lucide="check-circle"></i><div><h4>Smart Sync Control</h4><p>Fine-tune sync per type: scripts, values, containers, data, and services.</p></div></div>
+                    <div class="feature-item"><i data-lucide="check-circle"></i><div><h4>Flexible Apply Modes</h4><p>Choose between automatic or manual updates.</p></div></div>
+                    <div class="feature-item"><i data-lucide="check-circle"></i><div><h4>Change History</h4><p>Track and manage all modifications effortlessly.</p></div></div>
+                    <div class="feature-item"><i data-lucide="check-circle"></i><div><h4>Multi-place Support</h4><p>Sync up to 3 places with isolated environments.</p></div></div>
+                    <div class="feature-item"><i data-lucide="check-circle"></i><div><h4>Playtest Control</h4><p>Instant control: Play, Stop, Pause, Resume.</p></div></div>
+                    <div class="feature-item"><i data-lucide="check-circle"></i><div><h4>Advanced Tooling</h4><p>Expanded toolkit beyond core features.</p></div></div>
+                    <div class="feature-item"><i data-lucide="check-circle"></i><div><h4>Optimized AI Efficiency</h4><p>Better performance for bulk and high-leverage operations.</p></div></div>
+                </div>
+            </div>
+
+            <div class="status-grid">
+                <div class="card" id="server-card">
+                    <div class="card-header"><i data-lucide="server" style="width:16px"></i> Bridge Server</div>
+                    <div class="card-title" id="server-status">Offline</div>
+                    <div class="card-sub" id="server-details">Searching...</div>
+                </div>
+                <div class="card" id="plugin-card">
+                    <div class="card-header"><i data-lucide="toy-brick" style="width:16px"></i> Studio Plugin</div>
+                    <div class="card-title" id="plugin-status">Offline</div>
+                    <div class="card-sub" id="plugin-details">Waiting...</div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><i data-lucide="bot" style="width:16px"></i> Active Agent</div>
+                    <div class="card-title" id="agent-name">None</div>
+                    <div class="card-sub">AI Controller State</div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><i data-lucide="folder-sync" style="width:16px"></i> Sync State</div>
+                    <div class="card-title" id="sync-status">Offline</div>
+                    <div class="card-sub">Local to Studio Sync</div>
+                </div>
+            </div>
+            
+            <h3 class="section-title">Recent Activity History</h3>
+            <div class="list-panel" id="recent-changes"><div class="list-item" style="color:var(--text-muted); justify-content:center;">No activity logged</div></div>
+            
+            <h3 class="section-title">Session Summary</h3>
+            <div class="list-panel">
+                <div class="summary-row" style="padding:2rem;">
+                    <div class="summary-stat">Total Actions: <strong id="stat-total">0</strong></div>
+                    <div class="summary-stat"><i data-lucide="code-2" style="width:20px; color:var(--accent-blue)"></i> <strong id="stat-scripts">0</strong> scripts</div>
+                    <div class="summary-stat"><i data-lucide="sliders-horizontal" style="width:20px; color:var(--accent-green)"></i> <strong id="stat-props">0</strong> props</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHANGELOG PAGE -->
+        <div id="page-changelog" class="page"><h3 class="section-title">Execution History</h3><div class="list-panel" id="changelog-list"><div class="list-item" style="color:var(--text-muted); justify-content:center;">History empty</div></div></div>
+        
+        <!-- CONNECTION PAGE -->
+        <div id="page-connection" class="page">
+            <h3 class="section-title">Connection Info</h3>
+            <div class="panel">
+                <div class="panel-body">
+                    <p style="color:var(--text-muted); margin-top:0;">Ensure your MCP server is running and the Studio plugin is installed and connected to <code id="display-url-code">http://localhost:58741</code>.</p>
+                    <div class="form-group">
+                        <label>Dashboard Endpoint</label>
+                        <input type="text" id="display-url-input" value="http://localhost:58741" readonly style="background-color: var(--bg-body);">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SYNC PAGE -->
+        <div id="page-sync" class="page"><h3 class="section-title">Recent Sync Operations</h3><div class="list-panel" id="sync-list"><div class="list-item" style="color:var(--text-muted); justify-content:center;">No sync activity</div></div></div>
+
+        <!-- PLAYTEST PAGE -->
+        <div id="page-playtest" class="page">
+            <h3 class="section-title">Playtest Control</h3>
+            <div class="panel">
+                <div class="panel-body">
+                    <div class="btn-group">
+                        <button class="btn-play" onclick="controlPlaytest('play')"><i data-lucide="play"></i> Play</button>
+                        <button class="btn-run" onclick="controlPlaytest('run')"><i data-lucide="terminal-square"></i> Run</button>
+                        <button class="btn-stop" onclick="controlPlaytest('stop')"><i data-lucide="square"></i> Stop</button>
+                    </div>
+                    <div class="console-output" id="playtest-console">
+                        <div class="console-line info">Ready. Start a playtest to view output.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOOLS PAGE -->
+        <div id="page-tools" class="page">
+            <h3 class="section-title">Manual Tool Runner</h3>
+            <p style="color:var(--text-muted); margin-top:-1rem; margin-bottom:2rem; font-size:0.95rem;">Select a tool from the list to see its description and parameters. Use this to manually trigger MCP actions in Roblox Studio.</p>
+            
+            <div class="tool-grid">
+                <div class="panel">
+                    <div class="panel-header">Tool Configuration</div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label>Select Tool</label>
+                            <input type="text" id="tool-search" placeholder="🔍 Search tools..." oninput="filterTools()" style="margin-bottom:8px;">
+                            <select id="tool-select" onchange="onToolSelectChange()">
+                                <option value="" disabled selected>Choose a tool...</option>
+                            </select>
+                            <p id="tool-count" style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;"></p>
+                            <p id="tool-description" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; font-style: italic;"></p>
+                        </div>
+                        
+                        <div id="dynamic-form" style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: 1rem;">
+                            <!-- Dynamic fields will be injected here -->
+                            <p id="form-placeholder" style="color:var(--text-muted); font-size:0.9rem; text-align:center; padding: 2rem 0;">Select a tool to view its parameters.</p>
+                        </div>
+
+                        <div id="advanced-json-toggle" style="margin-bottom: 1rem; display: none;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer;">
+                                <input type="checkbox" id="use-raw-json" style="width: auto;" onchange="toggleRawJson()"> 
+                                <span style="font-size: 0.85rem;">Advanced: Edit Raw JSON</span>
+                            </label>
+                        </div>
+                        
+                        <div id="raw-json-container" style="display: none; margin-bottom: 1.5rem;">
+                            <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Raw Payload (JSON)</label>
+                            <textarea id="tool-payload" rows="6" style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">{}</textarea>
+                        </div>
+
+                        <button id="execute-tool-btn" class="execute-btn" onclick="executeTool()" disabled>Select a Tool First</button>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header">Execution Result</div>
+                    <div class="panel-body" style="height: 100%; display: flex; flex-direction: column;">
+                        <div id="result-status" style="margin-bottom: 1rem; display: none;">
+                            <span id="status-badge" style="padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;"></span>
+                        </div>
+                        <pre class="response-code" id="tool-response" style="flex-grow: 1; overflow-y: auto;">Tool output and response data will appear here...</pre>
+                        
+                        <div id="tool-help-box" style="margin-top: 1.5rem; padding: 1.25rem; background: var(--accent-blue-light); border-radius: 12px; border: 1px solid rgba(30, 64, 175, 0.1);">
+                            <h4 style="color: var(--accent-blue); font-size: 0.9rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px;">
+                                <i data-lucide="help-circle" style="width:16px"></i> Quick Guide
+                            </h4>
+                            <ul id="tool-tips-list" style="margin: 0; padding-left: 1.25rem; font-size: 0.8rem; color: var(--accent-blue); line-height: 1.5;">
+                                <li>Most tools require an <strong>instancePath</strong> (e.g., <code>game.Workspace.PartName</code>).</li>
+                                <li><strong>Actions</strong> define what the tool specifically does.</li>
+                                <li>Check the <strong>Studio Output</strong> for real-time script logs.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        const MCP_URL = (window.location.protocol === 'http:' || window.location.protocol === 'https:') 
+            ? window.location.origin 
+            : 'http://localhost:58741';
+        let availableTools = [];
+        let activeTool = null;
+        let lastKnownActivityCount = 0;
+        let isPollingConsole = false;
+
+        const stats = { total: 0, scripts: 0, props: 0 };
+
+        function showPage(pageId, event) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(`page-${pageId}`).classList.add('active');
+            
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            } else {
+                const navItems = document.querySelectorAll('.nav-item');
+                navItems.forEach(item => {
+                    if (item.innerText.toLowerCase().includes(pageId.toLowerCase())) {
+                        item.classList.add('active');
+                    }
+                });
+            }
+        }
+
+        function updateStatsDisplay() {
+            document.getElementById('stat-total').innerText = stats.total;
+            document.getElementById('stat-scripts').innerText = stats.scripts;
+            document.getElementById('stat-props').innerText = stats.props;
+        }
+
+        function renderLogItem(log, isDetailed = false) {
+            const el = document.createElement('div');
+            el.className = 'list-item';
+            let icon = 'activity';
+            let badgeClass = 'type-user';
+            let agentLabel = 'User';
+
+            const message = log.message || "Unknown action";
+
+            if (message.startsWith('AI:')) {
+                badgeClass = 'type-ai';
+                agentLabel = 'AI Action';
+            }
+
+            if (log.type === 'script') icon = 'file-code';
+            else if (log.type === 'prop') icon = 'sliders-horizontal';
+            else if (log.type === 'error') icon = 'alert-circle';
+            else if (log.type === 'playtest') icon = 'play-circle';
+
+            let cleanedMessage = message.replace('AI: ', '').replace('User: ', '');
+            
+            el.innerHTML = `
+                <div class="item-time">${log.time || '--:--'}</div>
+                <div class="item-icon"><i data-lucide="${icon}"></i></div>
+                <div class="item-content">
+                    <div class="item-title">${cleanedMessage} <span class="type-badge ${badgeClass}">${agentLabel}</span></div>
+                    ${isDetailed && log.details ? `<div class="item-detail">${log.details}</div>` : ''}
+                </div>
+            `;
+            return el;
+        }
+
+        function syncActivityHistory(activityLog) {
+            if (!activityLog || activityLog.length === 0) {
+                if (lastKnownActivityCount !== 0) {
+                    lastKnownActivityCount = 0;
+                    document.getElementById('recent-changes').innerHTML = '<div class="list-item" style="color:var(--text-muted); justify-content:center;">No activity logged</div>';
+                    document.getElementById('changelog-list').innerHTML = '<div class="list-item" style="color:var(--text-muted); justify-content:center;">History empty</div>';
+                    stats.total = 0; stats.scripts = 0; stats.props = 0;
+                    updateStatsDisplay();
+                }
+                return;
+            }
+            if (activityLog.length === lastKnownActivityCount) return;
+            
+            lastKnownActivityCount = activityLog.length;
+
+            const recentContainer = document.getElementById('recent-changes');
+            recentContainer.innerHTML = '';
+            
+            const changelogContainer = document.getElementById('changelog-list');
+            changelogContainer.innerHTML = '';
+
+            const syncListContainer = document.getElementById('sync-list');
+            if (syncListContainer) syncListContainer.innerHTML = '';
+
+            let total = 0, sc = 0, pr = 0;
+
+            activityLog.slice(0, 20).forEach(log => {
+                recentContainer.appendChild(renderLogItem(log, false));
+            });
+
+            activityLog.forEach(log => {
+                changelogContainer.appendChild(renderLogItem(log, true));
+                
+                if (syncListContainer && (log.message.toLowerCase().includes('project') || log.type === 'script')) {
+                    syncListContainer.appendChild(renderLogItem(log, true));
+                }
+
+                total++;
+                if (log.type === 'script') sc++;
+                if (log.type === 'prop') pr++;
+            });
+
+            if (syncListContainer && syncListContainer.children.length === 0) {
+                syncListContainer.innerHTML = '<div class="list-item" style="color:var(--text-muted); justify-content:center;">No sync activity</div>';
+            }
+
+            stats.total = total;
+            stats.scripts = sc;
+            stats.props = pr;
+            updateStatsDisplay();
+
+            lucide.createIcons();
+        }
+
+        async function fetchTools() {
+            const select = document.getElementById('tool-select');
+            const countEl = document.getElementById('tool-count');
+            try {
+                const res = await fetch(`${MCP_URL}/tools`);
+                const data = await res.json();
+                availableTools = data.tools || [];
+                
+                if (!select) return;
+                
+                const placeholder = select.options[0];
+                select.innerHTML = '';
+                if (placeholder) select.appendChild(placeholder);
+                select.disabled = false;
+
+                availableTools.sort((a, b) => a.name.localeCompare(b.name)).forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t.name;
+                    opt.textContent = formatToolName(t.name);
+                    select.appendChild(opt);
+                });
+
+                if (countEl) countEl.innerText = `${availableTools.length} tools available`;
+            } catch (err) {
+                console.error("Failed to fetch tools", err);
+                if (select) {
+                    select.disabled = true;
+                    select.innerHTML = '<option value="">⚠️ MCP Offline - Start server first</option>';
+                }
+                if (countEl) countEl.innerText = "0 tools loaded — server unreachable";
+            }
+        }
+
+        function filterTools() {
+            const q = document.getElementById('tool-search').value.toLowerCase();
+            const select = document.getElementById('tool-select');
+            Array.from(select.options).forEach(opt => {
+                if (opt.value === '') return; // keep placeholder
+                opt.style.display = opt.text.toLowerCase().includes(q) ? '' : 'none';
+            });
+        }
+
+        function formatToolName(name) {
+            if (!name) return "Unknown Tool";
+            return name.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        }
+
+        const TOOL_METADATA = {
+            'capture_viewport': {
+                tips: ["Captures the current Studio viewport as an image.", "Use <b>highlight_path</b> to highlight a specific instance."],
+                actions: ['capture', 'capture_with_overlay']
+            },
+            'capture_screenshot': {
+                tips: ["Takes a screenshot of the Studio viewport.", "Returns base64 PNG data."],
+                actions: ['capture', 'capture_with_overlay']
+            },
+            'generate_terrain': {
+                tips: ["Use <b>fill</b> to fill a region with a terrain material.", "Materials: Grass, Water, Rock, Sand, Snow, Mud, etc."],
+                actions: ['fill', 'flatten', 'generate', 'clear']
+            },
+            'control_lighting': {
+                tips: ["Use <b>set_preset</b> for quick lighting changes.", "Presets: sunset, midnight, noon, rainy, foggy, space"],
+                actions: ['set_property', 'set_atmosphere', 'set_preset', 'get_state']
+            },
+            'sync_project': {
+                tips: ["<b>export_to_local</b>: Save all scripts to local .lua files.", "<b>import_from_local</b>: Push local changes back to Studio."],
+                actions: ['export_to_local', 'import_from_local', 'get_sync_status', 'watch_mode']
+            },
+            'simulate_physics': {
+                tips: ["<b>get_mass</b>: Calculate total physical mass.", "<b>anchor_all</b>: Quickly freeze all objects in place."],
+                actions: ['preview_fall', 'check_stability', 'get_mass', 'find_unanchored', 'anchor_all']
+            },
+            'manage_datastore': {
+                tips: ["Only works in Studio test/run mode with API access enabled.", "<b>list_keys</b>: Browse all keys in a DataStore."],
+                actions: ['get_value', 'set_value', 'remove_value', 'list_keys', 'increment_value']
+            },
+            'validate_pathfinding': {
+                tips: ["Checks if an NPC can navigate between two positions.", "<b>visualize_path</b>: Creates temporary parts showing the path (auto-cleans after 10s)."],
+                actions: ['check_path', 'get_waypoints', 'visualize_path']
+            },
+            'diff_instances': {
+                tips: ["Compare two instances side by side.", "<b>compare_to_default</b>: See what's changed from Roblox defaults."],
+                actions: ['compare_two', 'compare_to_default', 'find_modified', 'export_diff']
+            },
+            'build_context': {
+                tips: ["Generates a compact AI-ready summary of your entire game.", "<b>estimate_tokens</b>: Check how many tokens the context will use."],
+                actions: ['get_full_context', 'get_script_context', 'get_selection_context', 'estimate_tokens']
+            },
+            'create_object': {
+                tips: ["Provide the <b>className</b> like 'Part' or 'Script'.", "The <b>parent</b> is usually 'game.Workspace' or 'game.ServerScriptService'."],
+                placeholders: { instancePath: 'game.Workspace.MyPart', className: 'Part', parent: 'game.Workspace' }
+            },
+            'monitor_remotes': {
+                tips: ["<b>list_remotes</b>: Shows all RemoteEvents/Functions.", "<b>log_fires</b>: Start logging remote activity to console."],
+                actions: ['list_remotes', 'log_fires', 'stop_logging', 'get_logs']
+            },
+            'track_changes': {
+                tips: ["Track every modification made by MCP tools.", "<b>get_changelog</b> returns a Markdown report."],
+                actions: ['start_tracking', 'stop_tracking', 'get_changelog', 'clear_changelog']
+            },
+            'auto_place': {
+                tips: ["<b>scatter</b>: Randomly place objects in a region.", "<b>place_in_grid</b>: Create a grid layout."],
+                actions: ['scatter', 'place_in_grid', 'place_along_path', 'align_to_surface']
+            },
+            'mirror_instances': {
+                tips: ["Mirrors objects across a center point (pivot).", "Choose X, Y, or Z axis."],
+                actions: ['mirror_x', 'mirror_y', 'mirror_z', 'mirror_and_weld']
+            },
+            'find_variable_leaks': {
+                tips: ["Scans for missing 'local' keywords in scripts.", "Helps prevent global variable pollution."],
+                actions: ['scan_script', 'scan_all', 'suggest_fixes']
+            },
+            'snap_to_grid': {
+                tips: ["Snap position or rotation to defined increments.", "Use <b>set_grid_size</b> first."],
+                actions: ['snap_selection', 'snap_path', 'snap_rotation', 'set_grid_size']
+            }
+        };
+
+        function onToolSelectChange() {
+            const selectEl = document.getElementById('tool-select');
+            const name = selectEl.value;
+            
+            // 1. Hard Reset: Clear EVERYTHING immediately
+            activeTool = null;
+            const container = document.getElementById('dynamic-form');
+            const btn = document.getElementById('execute-tool-btn');
+            const tipsList = document.getElementById('tool-tips-list');
+
+            // Reset state
+            document.getElementById('tool-payload').value = '{}';
+            document.getElementById('tool-response').innerText = 'Tool output and response data will appear here...';
+            document.getElementById('tool-response').className = 'response-code';
+            document.getElementById('result-status').style.display = 'none';
+            document.getElementById('tool-description').innerText = '';
+            document.getElementById('use-raw-json').checked = false;
+            document.getElementById('raw-json-container').style.display = 'none';
+            document.getElementById('advanced-json-toggle').style.display = 'none';
+            
+            const phSafe = document.getElementById('form-placeholder');
+            if (phSafe) {
+                phSafe.style.display = 'block';
+                phSafe.innerText = 'Select a tool to view its parameters.';
+            }
+            
+            tipsList.innerHTML = '';
+            btn.disabled = true;
+            btn.innerText = 'Loading Tool...';
+
+            // 2. Find the new tool
+            const foundTool = availableTools.find(t => t.name === name);
+            if (!foundTool) {
+                console.error('Tool not found:', name);
+                btn.innerText = 'Select a Tool First';
+                return;
+            }
+            
+            activeTool = foundTool;
+            console.log('Switching to:', activeTool.name);
+
+            // 3. Update UI
+            btn.disabled = false;
+            btn.innerText = `Run ${formatToolName(activeTool.name)}`;
+            document.getElementById('tool-description').innerText = activeTool.description || "No description provided.";
+            
+            const ph = document.getElementById('form-placeholder');
+            if (ph) ph.style.display = 'none';
+            
+            document.getElementById('advanced-json-toggle').style.display = 'block';
+            
+            document.getElementById('use-raw-json').checked = false;
+
+            const meta = TOOL_METADATA[activeTool.name] || { tips: ["Enter the required parameters to execute the tool."] };
+            meta.tips.forEach(tip => {
+                const li = document.createElement('li');
+                li.innerHTML = tip;
+                tipsList.appendChild(li);
+            });
+
+            if (activeTool.name.includes('script')) {
+                const li = document.createElement('li');
+                li.innerHTML = "Works with <b>Script</b>, <b>LocalScript</b>, and <b>ModuleScript</b>.";
+                tipsList.appendChild(li);
+            }
+
+            // 4. Rebuild Form (Fixed Order for BUG 2)
+            buildDynamicForm();
+            updateToolPayload(true);
+            toggleRawJson();
+        }
+
+        function buildDynamicForm() {
+            const container = document.getElementById('dynamic-form');
+            // Remove only injected form groups, not the placeholder
+            container.querySelectorAll('.form-group, .no-params-msg').forEach(el => el.remove());
+            container.style.display = 'block';
+
+            if (!activeTool || !activeTool.inputSchema || !activeTool.inputSchema.properties) {
+                const msg = document.createElement('p');
+                msg.className = 'no-params-msg';
+                msg.style.cssText = 'color:var(--text-muted); font-size:0.9rem;';
+                msg.innerText = 'No parameters required for this tool.';
+                container.appendChild(msg);
+                return;
+            }
+
+            const props = activeTool.inputSchema.properties;
+            const required = activeTool.inputSchema.required || [];
+            const meta = TOOL_METADATA[activeTool.name] || {};
+
+            for (const [key, schema] of Object.entries(props)) {
+                const group = document.createElement('div');
+                group.className = 'form-group';
+                
+                const label = document.createElement('label');
+                label.innerHTML = `${key} ${required.includes(key) ? '<span style="color:var(--accent-red)">*</span>' : ''}`;
+                label.style.fontSize = '0.85rem';
+                group.appendChild(label);
+
+                let input;
+                const isActionField = key.toLowerCase() === 'action' && meta.actions;
+                const hasEnum = schema.enum && schema.enum.length > 0;
+                
+                if (hasEnum || isActionField) {
+                    input = document.createElement('select');
+                    const enumValues = hasEnum ? schema.enum : meta.actions;
+                    enumValues.forEach(val => {
+                        const opt = document.createElement('option');
+                        opt.value = val;
+                        opt.textContent = val;
+                        input.appendChild(opt);
+                    });
+                } else if (schema.type === 'string') {
+                    input = document.createElement('input');
+                    input.type = 'text';
+                    input.placeholder = meta.placeholders?.[key] || schema.description || `Enter ${key}...`;
+                } else if (schema.type === 'number' || schema.type === 'integer') {
+                    input = document.createElement('input');
+                    input.type = 'number';
+                    input.placeholder = schema.description || '0';
+                } else if (schema.type === 'boolean') {
+                    input = document.createElement('select');
+                    input.innerHTML = '<option value="true">True</option><option value="false">False</option>';
+                } else {
+                    input = document.createElement('textarea');
+                    input.rows = 2;
+                    input.placeholder = `JSON ${schema.type || 'object'}...`;
+                }
+
+                input.id = `field-${key}`;
+                input.className = 'dynamic-field';
+                input.oninput = updateToolPayload;
+                input.onchange = updateToolPayload;
+                
+                group.appendChild(input);
+                
+                if (schema.description && !isActionField) {
+                    const desc = document.createElement('p');
+                    desc.style.fontSize = '0.75rem';
+                    desc.style.color = 'var(--text-muted)';
+                    desc.style.marginTop = '4px';
+                    desc.innerText = schema.description;
+                    group.appendChild(desc);
+                }
+
+                container.appendChild(group);
+            }
+        }
+
+        function toggleRawJson() {
+            const isRaw = document.getElementById('use-raw-json').checked;
+            document.getElementById('raw-json-container').style.display = isRaw ? 'block' : 'none';
+            document.getElementById('dynamic-form').style.display = isRaw ? 'none' : 'block';
+        }
+
+        function updateToolPayload(force = false) {
+            if (!force && document.getElementById('use-raw-json').checked) return;
+            
+            const payload = {};
+            const fields = document.querySelectorAll('.dynamic-field');
+            fields.forEach(f => {
+                const key = f.id.replace('field-', '');
+                let val = f.value;
+                
+                if (typeof val === 'string' && (val.trim().startsWith('{') || val.trim().startsWith('['))) {
+                    try { val = JSON.parse(val); } catch(e) {}
+                } else if (f.type === 'number') {
+                    val = parseFloat(val);
+                } else if (f.tagName === 'SELECT' && (val === 'true' || val === 'false')) {
+                    val = val === 'true';
+                }
+                
+                if (val !== "" && val !== undefined && val !== null) {
+                    payload[key] = val;
+                }
+            });
+            
+            document.getElementById('tool-payload').value = JSON.stringify(payload, null, 2);
+        }
+
+        async function executeTool() {
+            if (!activeTool) return;
+            const btn = document.getElementById('execute-tool-btn');
+            const resEl = document.getElementById('tool-response');
+            const statusEl = document.getElementById('result-status');
+            const badge = document.getElementById('status-badge');
+            
+            try {
+                updateToolPayload();
+                const payload = JSON.parse(document.getElementById('tool-payload').value);
+                
+                btn.disabled = true;
+                btn.innerText = 'Executing...';
+                resEl.innerText = 'Waiting for Studio response...';
+                resEl.className = 'response-code';
+                statusEl.style.display = 'none';
+
+                const res = await fetch(`${MCP_URL}/mcp/${activeTool.name}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                const isErr = !res.ok || data.isError || (data.content && data.content[0] && data.content[0].text && data.content[0].text.includes('"error"'));
+                
+                resEl.innerText = JSON.stringify(data, null, 2);
+                resEl.className = `response-code ${isErr ? 'error' : 'success'}`;
+                
+                statusEl.style.display = 'block';
+                badge.innerText = isErr ? 'Failed' : 'Success';
+                badge.style.backgroundColor = isErr ? 'var(--accent-red)' : 'var(--accent-green)';
+                badge.style.color = 'white';
+                
+            } catch (err) { 
+                resEl.innerText = err.message;
+                resEl.className = 'response-code error';
+            } finally {
+                btn.disabled = false;
+                btn.innerText = `Run ${formatToolName(activeTool.name)}`;
+                updateStatus();
+            }
+        }
+
+        async function controlPlaytest(mode) {
+            if (mode === 'stop') {
+                isPollingConsole = false;
+                try {
+                    const res = await fetch(`${MCP_URL}/mcp/stop_playtest`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: "{}" });
+                    const data = await res.json();
+                    appendConsoleLines(data.output);
+                    appendConsoleLines([{ type: 'info', message: 'Playtest Stopped.' }]);
+                } catch(e) {}
+            } else {
+                document.getElementById('playtest-console').innerHTML = '';
+                appendConsoleLines([{ type: 'info', message: `Starting Playtest (${mode})...` }]);
+                try {
+                    await fetch(`${MCP_URL}/start_playtest`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mode }) });
+                    if (!isPollingConsole) {
+                        isPollingConsole = true;
+                        pollConsole();
+                    }
+                } catch(e) {}
+            }
+            updateStatus();
+        }
+
+        async function pollConsole() {
+            if (!isPollingConsole) return;
+            try {
+                const res = await fetch(`${MCP_URL}/get_playtest_output`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: "{}" });
+                const data = await res.json();
+                if (data.output && data.output.length > 0) {
+                    appendConsoleLines(data.output);
+                }
+                if (!data.isRunning) isPollingConsole = false;
+            } catch(e) { isPollingConsole = false; }
+            
+            if (isPollingConsole) setTimeout(pollConsole, 1000);
+        }
+
+        function appendConsoleLines(lines) {
+            if (!lines || !lines.forEach) return;
+            const container = document.getElementById('playtest-console');
+            lines.forEach(l => {
+                const el = document.createElement('div');
+                let className = 'info';
+                if (l.type === 1 || l.type === 'warn') className = 'warn';
+                if (l.type === 3 || l.type === 'error') className = 'error';
+                el.className = `console-line ${className}`;
+                el.innerText = l.message;
+                container.appendChild(el);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function updateStatus() {
+            try {
+                const codeEl = document.getElementById('display-url-code');
+                const inputEl = document.getElementById('display-url-input');
+                if (codeEl) codeEl.innerText = MCP_URL;
+                if (inputEl) inputEl.value = MCP_URL;
+
+                const res = await fetch(`${MCP_URL}/status`);
+                const data = await res.json();
+
+                if (data.config) {
+                    document.getElementById('project-name').innerText = data.config.projectName || 'Active Project';
+                    const pathEl = document.getElementById('project-path-text');
+                    if (pathEl) pathEl.innerText = data.config.projectPath || '-';
+                    document.getElementById('place-badge').innerText = data.placeId ? `Place: ${data.placeId}` : 'Studio';
+                }
+
+                const sStatus = document.getElementById('server-status');
+                const pStatus = document.getElementById('plugin-status');
+                const syncStatus = document.getElementById('sync-status');
+
+                if (data.mcpServerActive) {
+                    sStatus.innerText = 'Online';
+                    sStatus.parentElement.classList.add('status-ok');
+                    document.getElementById('server-details').innerText = `Uptime: ${Math.floor(data.uptime/1000)}s`;
+                } else {
+                    sStatus.innerText = 'Offline';
+                    sStatus.parentElement.classList.remove('status-ok');
+                    document.getElementById('server-details').innerText = `Inactive`;
+                }
+
+                if (data.pluginConnected) {
+                    pStatus.innerText = 'Connected';
+                    pStatus.parentElement.classList.add('status-ok');
+                    document.getElementById('plugin-details').innerText = 'Bridge Active';
+                } else {
+                    pStatus.innerText = 'Waiting';
+                    pStatus.parentElement.classList.remove('status-ok');
+                    document.getElementById('plugin-details').innerText = 'No Plugin';
+                }
+
+                if (data.isSyncing) {
+                    syncStatus.innerText = 'Active';
+                    syncStatus.parentElement.classList.add('status-ok');
+                } else {
+                    syncStatus.innerText = 'Standby';
+                    syncStatus.parentElement.classList.remove('status-ok');
+                }
+
+                document.getElementById('agent-name').innerText = data.lastAgent || 'None';
+
+                if (data.activityLog) {
+                    syncActivityHistory(data.activityLog);
+                }
+
+            } catch (err) {
+                console.error("Status check failed", err);
+            }
+        }
+
+        setInterval(updateStatus, 2000);
+        updateStatus();
+        fetchTools();
+    </script>
+</body>
+</html>

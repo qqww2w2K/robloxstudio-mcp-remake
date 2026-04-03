@@ -1,0 +1,50 @@
+{
+  "name": "robloxstudio-mcp-remake",
+  "version": "1.0.0",
+  "private": false,
+  "description": "Roblox Studio MCP server with 92+ tools for AI-powered game development",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "robloxstudio-mcp-remake": "dist/index.js"
+  },
+  "files": [
+    "dist/**/*",
+    "studio-plugin/**/*"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "prepack": "node ../../scripts/prepack.mjs",
+    "postpack": "node ../../scripts/postpack.mjs"
+  },
+  "keywords": [
+    "roblox",
+    "mcp",
+    "studio",
+    "ai",
+    "claude",
+    "gemini",
+    "game-development"
+  ],
+  "author": "ItsQuentar",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qqww2w2K/robloxstudio-mcp-remake"
+  },
+  "homepage": "https://github.com/qqww2w2K/robloxstudio-mcp-remake#readme",
+  "bugs": {
+    "url": "https://github.com/qqww2w2K/robloxstudio-mcp-remake/issues"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "node-fetch": "^3.3.2",
+    "uuid": "^9.0.1",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "@robloxstudio-mcp/core": "*"
+  }
+}
